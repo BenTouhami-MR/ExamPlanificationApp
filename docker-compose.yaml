@@ -1,0 +1,47 @@
+version: '3.8'
+services:
+  # Backend Service (Spring Boot App)
+  backend:
+    build: ./examManagmentApp  # Path to your Spring Boot backend directory
+    ports:
+      - "8081:8081"  # Expose Spring Boot app on port 8081
+    environment:
+      # Environment variables for connecting to MySQL
+      SPRING_DATASOURCE_URL: jdbc:mysql://db:3306/ExamManagement?allowPublicKeyRetrieval=true&useSSL=false&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 1234
+    depends_on:
+      - db  # Ensure MySQL starts before backend
+    networks:
+      - app-network  # Network to allow communication between containers
+
+  # Frontend Service (React App)
+  frontend:
+    build: ./frontend-exam-app  # Path to your React frontend directory
+    ports:
+      - "3000:80"  # Expose React frontend on port 3000 (React dev server typically uses 3000)
+    networks:
+      - app-network  # Network to allow communication between containers
+    depends_on:
+      - backend  # Ensure backend starts before frontend
+
+  # MySQL Database Service
+  db:
+    image: mysql:8.0
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234  # MySQL root password
+      MYSQL_DATABASE: ExamManagement  # MySQL database name
+    ports:
+      - "3309:3306"  # Map port 3309 on host to port 3306 inside container
+    volumes:
+      - db_data:/var/lib/mysql  # Persist MySQL data
+    networks:
+      - app-network  # Same network as backend for communication
+
+# Define the network for communication between containers
+networks:
+  app-network:
+
+# Persist MySQL data
+volumes:
+  db_data:
